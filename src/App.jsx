@@ -36,7 +36,7 @@ function App() {
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
-	  <Textbox onChange={onChangeHandler} value={value} placeholder="Type here..." isFocused={true}/>
+	  <Textbox onChange={onChangeHandler} value={value} placeholder="Type here..." isFocused={true} isEditing={true}/>
     </>
   )
 }
