@@ -60,8 +60,9 @@ function getCaretCoordinates(textareaRef) {
   }
 }
 
-function TextBox({onChange, value, placeholder, isFocused, isEditing}) {
+function TextBox({onChange, value, placeholder, isEditing, minHeight, cursorStyle}) {
   const [caretPos, setCaretPos] = useState({left: 0, top: 0, height: 0, onScreen: false});
+  const [textareaHeight, setTextareaHeight] = useState(0);
   const textareaRef = useRef(null);
 
   const updateCaretPosition = () => {
@@ -73,34 +74,40 @@ function TextBox({onChange, value, placeholder, isFocused, isEditing}) {
 
   const handleChange = (e) => {
 	updateCaretPosition();
+	setTextareaHeight(e.target.scrollHeight);
 	onChange(e.target.value);
   };
 
   // Handle scroll events to update caret position
   useEffect(() => {
 	const textarea = textareaRef.current;
-	if (textarea && isFocused) {
+	if (textarea && isEditing) {
 	  textarea.addEventListener('scroll', updateCaretPosition);
 	  return () => {
 		textarea.removeEventListener('scroll', updateCaretPosition);
 	  };
 	}
-  }, [isFocused]);
+  }, [isEditing]);
 
   return (
 	<div className="relative">
 	  <textarea 
 		ref={textareaRef}
-		className="border-none outline-none caret-transparent resize-none font-size-15px w-full"
+		className="border-none outline-none caret-transparent resize-none font-size-15px w-full placeholder-gray-400 font-sans"
 		onChange={handleChange}
+		style={{
+		  height: textareaHeight,
+		  minHeight: (minHeight || 40) + 'px',
+		}}
 		value={value}
 		placeholder={placeholder}
 		onMouseUp={updateCaretPosition}
 		onKeyUp={updateCaretPosition}
+		cursor={cursorStyle || 'text'}
 	  />
 	  {isEditing && caretPos.onScreen && (
 		<div 
-		  className="absolute bg-sky-400"
+		  className="absolute bg-sky-400 blinking"
 		  style={{
 			left: `${caretPos.left}px`,
 			top: `${caretPos.top}px`,
