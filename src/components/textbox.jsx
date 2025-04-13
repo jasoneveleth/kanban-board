@@ -45,6 +45,8 @@ function getCaretCoordinates(textareaRef) {
 	const x = caretRect.left - divRect.left - textarea.scrollLeft;
 	const y = caretRect.top - divRect.top - textarea.scrollTop;
 	const height = caretRect.height;
+	console.log('caretRect.top, divRect.top, textarea.scrollTop, y, height, divRect.height');
+	console.log(caretRect.top, divRect.top, textarea.scrollTop, y, height, divRect.height);
 
 	// Clean up
 	document.body.removeChild(div);
@@ -60,7 +62,7 @@ function getCaretCoordinates(textareaRef) {
   }
 }
 
-function TextBox({onChange, value, placeholder, isEditing, minHeight, cursorStyle}) {
+function TextBox({onChange, value, placeholder, isEditing, minHeight, cursorStyle, onDoubleClick, onClick}) {
   const [caretPos, setCaretPos] = useState({left: 0, top: 0, height: 0, onScreen: false});
   const [textareaHeight, setTextareaHeight] = useState(0);
   const textareaRef = useRef(null);
@@ -89,6 +91,10 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight, cursorStyl
 	}
   }, [isEditing]);
 
+  if (isEditing) {
+	console.log(caretPos)
+  }
+
   let height = minHeight || 32;
 
   return (
@@ -101,14 +107,16 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight, cursorStyl
 		  height: textareaHeight,
 		  minHeight: height + 'px',
 		  lineHeight: height + 'px',
+		  cursor: cursorStyle || 'text',
 		}}
 		value={value}
 		placeholder={placeholder}
 		onMouseUp={updateCaretPosition}
 		onKeyUp={updateCaretPosition}
-		cursor={cursorStyle || 'text'}
+		onDoubleClick={onDoubleClick}
+		onClick={onClick}
 	  />
-	  {isEditing && caretPos.onScreen && (
+	  {isEditing && (
 		<div 
 		  className="absolute bg-sky-400 blinking"
 		  style={{
