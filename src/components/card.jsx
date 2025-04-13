@@ -9,15 +9,15 @@ function Card({isSelected, title, notes, deadline, handlers}) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingNotes, setIsEditingNotes] = useState(false);
 
-  let shared = "rounded-lg shadow-sm w-full bg-white cursor-pointer select-none card";
+  let shared = "rounded-lg shadow-sm w-260 bg-white cursor-pointer select-none card";
   
   let className = "";
   if (isSelected) {
-    className = "px-3 py-2 border-3 border-blue-400 " + shared;
+    className = "px-12 py-8 border-3 border-blue-400 " + shared;
   } else if (isEditingTitle || isEditingNotes) {
-    className = "px-3 py-2 border-3 border-pink-300 " + shared;
+    className = "px-12 py-8 border-3 border-pink-300 " + shared;
   } else {
-	className = "px-4 py-2.5 border border-gray-300 " + shared
+	className = "px-15 py-10 border border-gray-300 " + shared
   }
 
   return (
@@ -26,7 +26,7 @@ function Card({isSelected, title, notes, deadline, handlers}) {
 		value={title} 
 		placeholder="New Task" 
 		isEditing={isEditingTitle} 
-		minHeight={20}
+		minHeight={18}
 	    cursorStyle={isEditingTitle ? 'text' : 'pointer'}/>
 	  {isEditingTitle || isEditingNotes ? (
 	  <Textbox 
@@ -34,7 +34,7 @@ function Card({isSelected, title, notes, deadline, handlers}) {
 		onChange={onChange} 
 		value={notes}
 		placeholder="Notes" 
-		minHeight={60}
+		minHeight={54}
 		isEditing={isEditingNotes}
 	    cursorStyle={isEditingNotes ? 'text' : 'pointer'}/>)
 		: null}

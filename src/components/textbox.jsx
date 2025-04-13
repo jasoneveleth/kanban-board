@@ -89,15 +89,18 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight, cursorStyl
 	}
   }, [isEditing]);
 
+  let height = minHeight || 32;
+
   return (
-	<div className="relative">
+	<div className="relative flex flex-col">
 	  <textarea 
 		ref={textareaRef}
 		className="border-none outline-none caret-transparent resize-none font-size-15px w-full placeholder-gray-400 font-sans"
 		onChange={handleChange}
 		style={{
 		  height: textareaHeight,
-		  minHeight: (minHeight || 40) + 'px',
+		  minHeight: height + 'px',
+		  lineHeight: height + 'px',
 		}}
 		value={value}
 		placeholder={placeholder}
