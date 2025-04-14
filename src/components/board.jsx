@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Card from './card.jsx';
+import { useTaskContext } from './StateManager.jsx';
 
 function assert(condition, message) {
 	if (!condition) {
@@ -8,50 +9,7 @@ function assert(condition, message) {
 }
 
 function Board() {
-  const [taskData, setTaskData] = useState({
-	"task1": {
-	  id: "task1",
-	  title: "Task 1",
-	  notes: "",
-	  deadline: null,
-	  startDate: null,
-	  col: 0,
-	},
-	"task2": {
-	  id: "task2",
-	  title: "",
-	  notes: "",
-	  deadline: null,
-	  startDate: null,
-	  col: 0,
-	}
-  })
-
-  const onChange = (taskId, newData) => {
-	const task = taskData[taskId];
-	assert(task, "Task not found");
-	let newfield;
-	if (isEditing.field === 'title') {
-	  newfield = {title: newData};
-	} else if (isEditing.field === 'notes') {
-	  newfield = {notes: newData};
-	}
-	setTaskData({...taskData, [taskId]: {...task, ...newfield}})
-  }
-
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [isEditing, setIsEditing] = useState({taskId: null, field: null});
-
-  const [colNames, setColNames] = useState(["Plan", "Doing", "Review", "Done"]);
-
-  const onDoubleClick = (taskId, field) => {
-	setSelectedTaskId(taskId);
-	setIsEditing({taskId: taskId, field: field || 'title'});
-  };
-  const onClick = (taskId) => {
-	setSelectedTaskId(taskId);
-  };
-
+  const {taskData, colNames, isTaskSelected} = useTaskContext();
   const handleKey = (e) => {
 	if (e.key === 'Escape') {
 	  setIsEditing({taskId: null, field: null});
@@ -71,13 +29,12 @@ function Board() {
 	  ))}
 	  {Object.values(taskData).map((task) => (
 		<Card
-		  isSelected={selectedTaskId === task.id}
 		  key={task.id}
+		  id={task.id}
+		  isSelected={isTaskSelected(task.id)}
 		  title={task.title}
 		  notes={task.notes}
 		  deadline={task.deadline}
-		  editingInfo={isEditing.taskId === task.id ? isEditing : null}
-		  handlers={[(field) => onDoubleClick(task.id, field), () => onClick(task.id), (x) => onChange(task.id, x)]}
 		/>
 	  ))}
 	</div>
