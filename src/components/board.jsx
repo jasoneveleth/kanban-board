@@ -13,22 +13,23 @@ function Board() {
 
   return (
 	<div 
-	  className="w-full h-full relative"
+	  className="w-full h-full relative flex flex-row gap-20"
 	  onKeyDown={handleKeyDown}>
 	  {colNames.map((colName, index) => (
-		<div key={index} className="col">
-		  <h2>{colName}</h2>
+		<div key={index} className="flex flex-col gap-10">
+		  <h2 className="font-semibold ml-5">{colName}</h2>
+		  {Object.values(taskData).map((task) => task.col == index && (
+			<Card
+			  key={task.id}
+			  id={task.id}
+			  isSelected={isTaskSelected(task.id)}
+			  title={task.title}
+			  notes={task.notes}
+			  deadline={task.deadline}
+			/>
+		  ))}
+		  <h2 className="pl-20">+ Add Task</h2>
 		</div>
-	  ))}
-	  {Object.values(taskData).map((task) => (
-		<Card
-		  key={task.id}
-		  id={task.id}
-		  isSelected={isTaskSelected(task.id)}
-		  title={task.title}
-		  notes={task.notes}
-		  deadline={task.deadline}
-		/>
 	  ))}
 	</div>
   )
