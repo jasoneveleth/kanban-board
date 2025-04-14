@@ -34,7 +34,7 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
 		style={{
 		  height: textareaHeight,
 		  minHeight: height + 'px',
-		  lineHeight: height + 'px',
+		  lineHeight: '18px',
 		  cursor: cursorStyle || 'text',
 		}}
 		value={value}

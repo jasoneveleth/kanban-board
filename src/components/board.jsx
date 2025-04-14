@@ -9,19 +9,12 @@ function assert(condition, message) {
 }
 
 function Board() {
-  const {taskData, colNames, isTaskSelected} = useTaskContext();
-  const handleKey = (e) => {
-	if (e.key === 'Escape') {
-	  setIsEditing({taskId: null, field: null});
-	} else if (e.key === 'Enter') {
-	  setIsEditing({taskId: selectedTaskId, field: 'title'});
-	}
-  }
+  const {taskData, colNames, isTaskSelected, handleKeyDown} = useTaskContext();
 
   return (
 	<div 
 	  className="w-full h-full relative"
-	  onKeyDown={handleKey}>
+	  onKeyDown={handleKeyDown}>
 	  {colNames.map((colName, index) => (
 		<div key={index} className="col">
 		  <h2>{colName}</h2>
