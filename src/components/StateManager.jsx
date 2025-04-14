@@ -14,7 +14,6 @@ export function TaskProvider({ children }) {
 	  notes: "",
 	  deadline: null,
 	  startDate: null,
-	  col: 0,
 	},
 	"task2": {
 	  id: "task2",
@@ -22,16 +21,21 @@ export function TaskProvider({ children }) {
 	  notes: "",
 	  deadline: null,
 	  startDate: null,
-	  col: 0,
 	},
-	"task3": { id: "task3", title: "asdfjk", notes: "", deadline: null, startDate: null, col: 1, },
-	"task4": { id: "task4", title: "djskfl", notes: "", deadline: null, startDate: null, col: 1, },
-	"task5": { id: "task5", title: "lkdjsaf", notes: "", deadline: null, startDate: null, col: 2, },
-	"task6": { id: "task6", title: "iewuo", notes: "", deadline: null, startDate: null, col: 3, },
-	"task7": { id: "task7", title: "cxnmvcx", notes: "", deadline: null, startDate: null, col: 3, },
-	"task8": { id: "task8", title: "yyrvr", notes: "", deadline: null, startDate: null, col: 1, },
-	"task9": { id: "task9", title: "moukh", notes: "", deadline: null, startDate: null, col: 2, },
+	"task3": { id: "task3", title: "asdfjk", notes: "", deadline: null, startDate: null, },
+	"task4": { id: "task4", title: "djskfl", notes: "", deadline: null, startDate: null, },
+	"task5": { id: "task5", title: "lkdjsaf", notes: "", deadline: null, startDate: null, },
+	"task6": { id: "task6", title: "iewuo", notes: "", deadline: null, startDate: null, },
+	"task7": { id: "task7", title: "cxnmvcx", notes: "", deadline: null, startDate: null, },
+	"task8": { id: "task8", title: "yyrvr", notes: "", deadline: null, startDate: null, },
+	"task9": { id: "task9", title: "moukh", notes: "", deadline: null, startDate: null, },
   })
+  const [colState, setColState] = useState({
+	"Plan": ["task1", "task2", "task3"], 
+	"Doing": ["task4", "task5", "task6"],
+	"Review": ["task7", "task8", "task9"],
+	"Done": []
+  });
 
   const [animState, setAnimState] = useState({
     "task1": {
@@ -52,7 +56,6 @@ export function TaskProvider({ children }) {
 
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isEditing, setIsEditing] = useState({taskId: null, field: null});
-  const [colNames, setColNames] = useState(["Plan", "Doing", "Review", "Done"]);
 
   const selectTask = (id) => {
 	if (isEditing.taskId && isEditing.taskId !== id) {
@@ -97,7 +100,7 @@ export function TaskProvider({ children }) {
 
   const contextValue = {
     taskData,
-    colNames,
+    colState,
     updateTask,
     selectTask,
     startEditing,

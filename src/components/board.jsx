@@ -3,16 +3,20 @@ import Card from './card.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
 function Board() {
-  const {taskData, colNames, isTaskSelected, handleKeyDown} = useTaskContext();
+  const {taskData, colState, isTaskSelected, handleKeyDown} = useTaskContext();
+  const colNames = Object.keys(colState)
+  const tasks = (colName) => {
+	return colState[colName].map((taskId) => taskData[taskId])
+  }
 
   return (
 	<div 
 	  className="w-full h-full relative flex flex-row gap-20"
 	  onKeyDown={handleKeyDown}>
-	  {colNames.map((colName, index) => (
-		<div key={index} className="flex flex-col gap-10">
-		  <h2 className="font-semibold ml-5">{colName}</h2>
-		  {Object.values(taskData).map((task) => task.col == index && (
+	  {colNames.map((name) => (
+		<div key={name} className="flex flex-col gap-10">
+		  <h2 className="font-semibold ml-5">{name}</h2>
+		  {tasks(name).map((task) => (
 			<Card
 			  key={task.id}
 			  id={task.id}
