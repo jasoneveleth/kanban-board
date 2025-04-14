@@ -7,7 +7,7 @@ function Card({id, isSelected, title, notes, deadline}) {
   const isExpanded = isTaskEditing(id);
 
   let className = "";
-  let shared = "rounded-lg shadow-sm w-260 bg-white cursor-pointer select-none card";
+  let shared = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none";
   if (isExpanded) {
     className = "px-13 py-8 border-3 border-pink-300 " + shared;
   } else if (isSelected) {

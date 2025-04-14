@@ -2,12 +2,6 @@ import React, { useState } from 'react';
 import Card from './card.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
-function assert(condition, message) {
-	if (!condition) {
-		throw new Error(message);
-	}
-}
-
 function Board() {
   const {taskData, colNames, isTaskSelected, handleKeyDown} = useTaskContext();
 

@@ -1,9 +1,17 @@
 import { useState, useRef } from 'react';
 
+function assert(condition, message) {
+	if (!condition) {
+		throw new Error(message);
+	}
+}
+
 function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyle, acceptingClicks}) {
   const [caretPos, setCaretPos] = useState({left: 0, top: 0, height: 0, onScreen: false});
   const [textareaHeight, setTextareaHeight] = useState(0);
   const textareaRef = useRef(null);
+
+  assert(!isEditing || acceptingClicks, "acceptingClicks should be true only when isEditing is true");
 
   const updateCaretPosition = (e) => {
 	const coordinates = getCaretCoordinates(textareaRef);
@@ -18,18 +26,20 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
 	onChange(e.target.value);
   };
 
-  // function to stop propgation if isEditing
   const handleClick = (e) => {
 	if (acceptingClicks) {
 	  e.stopPropagation();
 	}
   }
 
+  const selectableClass = acceptingClicks ? '' : 'pointer-events-none';
+  const className = `border-none outline-none caret-transparent resize-none font-size-15px w-full placeholder-gray-400 font-sans ${selectableClass}`
+
   return (
-	<div className="relative flex flex-col">
+	<div className={`relative flex flex-col ${selectableClass}`}>
 	  <textarea 
 		ref={textareaRef}
-		className="border-none outline-none caret-transparent resize-none font-size-15px w-full placeholder-gray-400 font-sans"
+		className={className}
 		onChange={handleChange}
 		style={{
 		  height: textareaHeight,
@@ -46,7 +56,7 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
 	  />
 	  {isEditing && (
 		<div 
-		  className="absolute bg-sky-400 blinking"
+		  className={`absolute bg-sky-400 blinking ${selectableClass}`}
 		  style={{
 			left: `${caretPos.left}px`,
 			top: `${caretPos.top}px`,
