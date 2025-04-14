@@ -41,14 +41,14 @@ export function TaskProvider({ children }) {
     "task1": {
 	  dest: {x: null, y: null},
 	  pos: {x: null, y: null},
-	  state: 'idle',
+	  state: 'rest',
 	  m: 123,
 	  v: {x: 0, y: 0},
 	  }, 
 	"task2": {
 	  dest: {x: null, y: null},
 	  pos: {x: null, y: null},
-	  state: 'idle',
+	  state: 'rest',
 	  m: 123,
 	  v: {x: 0, y: 0},
 	}
