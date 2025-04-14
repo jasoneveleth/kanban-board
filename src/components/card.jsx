@@ -2,9 +2,20 @@ import React, { useState } from 'react';
 import Textbox from './textbox.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
-function Card({id, isSelected, title, notes, deadline}) {
-  const {selectTask, startEditing, isFieldEditing, isTaskEditing, updateTask} = useTaskContext();
+function Card({id}) {
+  const {
+	selectTask,
+	startEditing,
+	isFieldEditing,
+	isTaskEditing,
+	updateTask,
+	isTaskSelected,
+	taskData,
+	animState,
+  } = useTaskContext();
+  const {title, notes, deadline, state} = taskData[id];
   const isExpanded = isTaskEditing(id);
+  const isSelected = isTaskSelected(id)
 
   let className = "";
   let shared = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none";

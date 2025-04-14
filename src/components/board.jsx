@@ -3,7 +3,7 @@ import Card from './card.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
 function Board() {
-  const {taskData, colState, isTaskSelected, handleKeyDown} = useTaskContext();
+  const {taskData, colState, handleKeyDown} = useTaskContext();
   const colNames = Object.keys(colState)
   const tasks = (colName) => {
 	return colState[colName].map((taskId) => taskData[taskId])
@@ -20,10 +20,6 @@ function Board() {
 			<Card
 			  key={task.id}
 			  id={task.id}
-			  isSelected={isTaskSelected(task.id)}
-			  title={task.title}
-			  notes={task.notes}
-			  deadline={task.deadline}
 			/>
 		  ))}
 		  <h2 className="pl-20">+ Add Task</h2>

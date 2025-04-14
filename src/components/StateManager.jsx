@@ -108,7 +108,8 @@ export function TaskProvider({ children }) {
     isTaskSelected,
     isFieldEditing,
 	isTaskEditing,
-    handleKeyDown
+    handleKeyDown,
+	animState,
   };
 
   return (
