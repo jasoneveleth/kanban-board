@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import Textbox from './textbox.jsx';
 import { useTaskContext } from './StateManager.jsx';
+import { createPortal } from 'react-dom';
 
-function Card({id}) {
+function Card({id, isplaceholder}) {
   const {
 	selectTask,
 	startEditing,
@@ -11,22 +12,74 @@ function Card({id}) {
 	updateTask,
 	isTaskSelected,
 	taskData,
-	animState,
+	startDragging,
+	moved,
   } = useTaskContext();
   const {title, notes, deadline} = taskData[id];
-  const {state, pos} = animState[id];
   const isExpanded = isTaskEditing(id);
   const isSelected = isTaskSelected(id)
 
-  // state can be either rest, dragging, or moving
+  const mouseDownPosRef = useRef({x: null, y: null, dragging: null});
+  const absPosRef = useRef({x: null, y: null});
+
+  const ref = useRef();
+  const rectRef = useRef();
+
+  // cache the bounding rects of cards
+  useLayoutEffect(() => {
+    const { width, height } = ref.current.getBoundingClientRect();
+	rectRef.current = { width, height };
+  }, []);
+
+  const handleMouseDown = (e) => {
+	if (!isExpanded) {
+	  mouseDownPosRef.current = {x: e.clientX, y: e.clientY, dragging: false}
+	  window.addEventListener('mousemove', handleMouseMove)
+	  window.addEventListener('mouseup', handleMouseUp)
+	}
+  }
+
+  const handleMouseMove = (e) => {
+	const {x, y, dragging} = mouseDownPosRef.current;
+	if (dragging) {
+	  absPosRef.current = {x: e.clientX, y: e.clientY};
+	} else if (x !== null && y !== null) {
+      const [dx, dy] = [e.clientX - x, e.clientY - y]
+      const distance = Math.sqrt(dx * dx + dy * dy);
+	  const height = e.target.getBoundingClientRect().height;
+
+	  // bug: we need to do this because React doesn't update state fast enough for mouseMoves
+	  if (distance > 1) {
+		mouseDownPosRef.current.dragging = true
+		startDragging(id, height);
+	  }
+	}
+  }
+
+  const handleMouseUp = (e) => {
+    mouseDownPosRef.current = null;
+	absPosRef.current = null
+    window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('mouseup', handleMouseUp);
+
+    // If we were dragging, call into state manager to handle drop
+    if (mouseDownPosRef.current.dragging) {
+	  dropped(id, { clientX: e.clientX, clientY: e.clientY });
+    }
+  };
+
+  const {x, y, dragging} = mouseDownPosRef.current;
+  // state can be either rest, dragging, or settling
   let style = {}
-  if (state === 'dragging') {
+  if (dragging) {
+	const {x: absX, y: absY} = absPosRef.current;
 	style = {
 	  position: 'absolute',
 	  top: 0,
 	  left: 0,
 	  transition: 'none',
-	  transform: `translate(${pos.x}px, ${pos.y}px, 3deg)`,
+	  zIndex: 1000,
+	  transform: `translate(${absX - x}px, ${absY - y}px, 3deg)`,
 	}
   }
 
@@ -39,12 +92,18 @@ function Card({id}) {
 	className = className + " px-15 py-10 border border-gray-300"
   }
 
-  return (
+  const placeholder = (
+	<div className="rounded-lg shadow-sm w-260 bg-gray-200" style={{height: `${rectRef.current?.height || 18}px`}}/>
+  )
+
+  const card = (
 	<div 
+	  ref={ref}
 	  className={className} 
 	  onClick={() => selectTask(id)} 
 	  onDoubleClick={() => startEditing(id, 'title')}
-	  {...style}>
+	  onMouseDown={handleMouseDown}
+	  style={style}>
 	  <Textbox 
 		value={title} 
 		placeholder="New Task" 
@@ -64,6 +123,14 @@ function Card({id}) {
 	  ) : null}
 	</div>
   )
+
+  return (
+	<>
+	  {isplaceholder ? placeholder : card}
+	  {isplaceholder ? createPortal(card, document.body) : null}
+	</>
+  )
 }
 
 export default Card;
+

@@ -3,11 +3,18 @@ import Card from './card.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
 function Board() {
-  const {taskData, colState, handleKeyDown} = useTaskContext();
-  const colNames = Object.keys(colState)
+  const {taskData, colState, handleKeyDown, dragging} = useTaskContext();
+  const colNames = Object.keys(colState);
+
   const tasks = (colName) => {
-	return colState[colName].map((taskId) => taskData[taskId])
-  }
+	let taskList = colState[colName].map((id) => 
+	  <Card 
+		key={id} 
+		id={id} 
+		isplaceholder={id === dragging.id}/>
+	)
+	return taskList
+  };
 
   return (
 	<div 
@@ -16,12 +23,7 @@ function Board() {
 	  {colNames.map((name) => (
 		<div key={name} className="flex flex-col gap-10">
 		  <h2 className="font-semibold ml-5">{name}</h2>
-		  {tasks(name).map((task) => (
-			<Card
-			  key={task.id}
-			  id={task.id}
-			/>
-		  ))}
+		  {tasks(name)}
 		  <h2 className="pl-20">+ Add Task</h2>
 		</div>
 	  ))}

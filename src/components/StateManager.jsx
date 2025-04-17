@@ -37,23 +37,6 @@ export function TaskProvider({ children }) {
 	"Done": []
   });
 
-  const [animState, setAnimState] = useState({
-    "task1": {
-	  dest: {x: null, y: null},
-	  pos: {x: null, y: null},
-	  state: 'rest',
-	  m: 123,
-	  v: {x: 0, y: 0},
-	  }, 
-	"task2": {
-	  dest: {x: null, y: null},
-	  pos: {x: null, y: null},
-	  state: 'rest',
-	  m: 123,
-	  v: {x: 0, y: 0},
-	}
-  })
-
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [isEditing, setIsEditing] = useState({taskId: null, field: null});
 
@@ -98,6 +81,11 @@ export function TaskProvider({ children }) {
     }
   };
 
+  const [dragging, setDragging] = useState({id: null, height: null});
+  const startDragging = (id, height) => {
+	setDragging({id, height})
+  }
+
   const contextValue = {
     taskData,
     colState,
@@ -109,7 +97,8 @@ export function TaskProvider({ children }) {
     isFieldEditing,
 	isTaskEditing,
     handleKeyDown,
-	animState,
+	startDragging,
+	dragging
   };
 
   return (
