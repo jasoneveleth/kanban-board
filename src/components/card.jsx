@@ -57,15 +57,14 @@ function Card({id, isplaceholder}) {
   }
 
   const handleMouseUp = (e) => {
+    if (mouseDownPosRef.current.dragging) {
+	  dropped(id, { clientX: e.clientX, clientY: e.clientY });
+    }
     mouseDownPosRef.current = null;
 	absPosRef.current = null
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('mouseup', handleMouseUp);
 
-    // If we were dragging, call into state manager to handle drop
-    if (mouseDownPosRef.current.dragging) {
-	  dropped(id, { clientX: e.clientX, clientY: e.clientY });
-    }
   };
 
   const {x, y, dragging} = mouseDownPosRef.current;
