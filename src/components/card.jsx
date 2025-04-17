@@ -13,7 +13,7 @@ function Card({id, isplaceholder}) {
 	isTaskSelected,
 	taskData,
 	startDragging,
-	moved,
+	dropped,
   } = useTaskContext();
   const {title, notes, deadline} = taskData[id];
   const isExpanded = isTaskEditing(id);

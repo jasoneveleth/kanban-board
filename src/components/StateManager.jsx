@@ -86,6 +86,10 @@ export function TaskProvider({ children }) {
 	setDragging({id, height})
   }
 
+  const dropped = (id, pos) => {
+	// TODO
+  }
+
   const contextValue = {
     taskData,
     colState,
@@ -98,7 +102,8 @@ export function TaskProvider({ children }) {
 	isTaskEditing,
     handleKeyDown,
 	startDragging,
-	dragging
+	dragging,
+	dropped,
   };
 
   return (
