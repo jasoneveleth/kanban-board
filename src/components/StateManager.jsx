@@ -82,11 +82,11 @@ export function TaskProvider({ children }) {
   };
 
   const [dragging, setDragging] = useState({id: null, height: null});
-  const startDragging = (id, height) => {
-	setDragging({id, height})
+  const startDragging = (id) => {
+	setDragging({id})
   }
 
-  const dropped = (id, pos) => {
+  const dropped = (id) => {
 	// TODO
   }
 

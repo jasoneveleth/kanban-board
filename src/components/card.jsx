@@ -1,4 +1,4 @@
-import React, { useRef, useLayoutEffect } from 'react';
+import React, { useRef, useState, useLayoutEffect } from 'react';
 import Textbox from './textbox.jsx';
 import { useTaskContext } from './StateManager.jsx';
 import { createPortal } from 'react-dom';
@@ -19,66 +19,60 @@ function Card({id, isplaceholder}) {
   const isExpanded = isTaskEditing(id);
   const isSelected = isTaskSelected(id)
 
+  const state = useRef('rest') // rest, dragging, settling
   const mouseDownPosRef = useRef({x: null, y: null, dragging: null});
-  const absPosRef = useRef({x: null, y: null});
+  const [absPos, setAbsPos] = useState({x: null, y: null});
 
   const ref = useRef();
-  const rectRef = useRef();
-
-  // cache the bounding rects of cards
-  useLayoutEffect(() => {
-    const { width, height } = ref.current.getBoundingClientRect();
-	rectRef.current = { width, height };
-  }, []);
+  const placeholderRef = useRef(null)
 
   const handleMouseDown = (e) => {
 	if (!isExpanded) {
-	  mouseDownPosRef.current = {x: e.clientX, y: e.clientY, dragging: false}
+	  mouseDownPosRef.current = {x: e.clientX, y: e.clientY}
+	  setAbsPos({x: 0, y: 0})
 	  window.addEventListener('mousemove', handleMouseMove)
 	  window.addEventListener('mouseup', handleMouseUp)
 	}
   }
 
   const handleMouseMove = (e) => {
-	const {x, y, dragging} = mouseDownPosRef.current;
-	if (dragging) {
-	  absPosRef.current = {x: e.clientX, y: e.clientY};
+	const {x, y} = mouseDownPosRef.current;
+	if (state.current === 'dragging') {
+	  const {x: realx, y: realy} = placeholderRef.current.getBoundingClientRect()
+	  setAbsPos({x: e.clientX - x + realx, y: e.clientY - y + realy})
 	} else if (x !== null && y !== null) {
       const [dx, dy] = [e.clientX - x, e.clientY - y]
       const distance = Math.sqrt(dx * dx + dy * dy);
-	  const height = e.target.getBoundingClientRect().height;
 
 	  // bug: we need to do this because React doesn't update state fast enough for mouseMoves
 	  if (distance > 1) {
-		mouseDownPosRef.current.dragging = true
-		startDragging(id, height);
+		state.current = 'dragging';
+		startDragging(id);
 	  }
 	}
   }
 
   const handleMouseUp = (e) => {
-    if (mouseDownPosRef.current.dragging) {
-	  dropped(id, { clientX: e.clientX, clientY: e.clientY });
+    if (state.current == 'dragging') {
+	  dropped(id);
     }
-    mouseDownPosRef.current = null;
-	absPosRef.current = null
+	state.current = 'settling'
+    mouseDownPosRef.current = {x: null, y: null};
+	setAbsPos({x: null, y: null})
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('mouseup', handleMouseUp);
-
   };
 
-  const {x, y, dragging} = mouseDownPosRef.current;
   // state can be either rest, dragging, or settling
   let style = {}
-  if (dragging) {
-	const {x: absX, y: absY} = absPosRef.current;
+  if (state.current === 'dragging') {
 	style = {
 	  position: 'absolute',
 	  top: 0,
 	  left: 0,
 	  transition: 'none',
 	  zIndex: 1000,
-	  transform: `translate(${absX - x}px, ${absY - y}px, 3deg)`,
+	  transform: `translate(${absPos.x}px, ${absPos.y}px) rotate(3deg)`,
 	}
   }
 
@@ -91,9 +85,16 @@ function Card({id, isplaceholder}) {
 	className = className + " px-15 py-10 border border-gray-300"
   }
 
-  const placeholder = (
-	<div className="rounded-lg shadow-sm w-260 bg-gray-200" style={{height: `${rectRef.current?.height || 18}px`}}/>
-  )
+  const getHeight = () => {
+	let height = ref.current?.getBoundingClientRect().height || 18
+	if (state.current === 'dragging') {
+	  // we rorate when we drag it
+	  // height = (boundingHeight - sin(3deb) * 260) / cos(3deg)
+	  // https://stackoverflow.com/a/54112751/13394797
+	  height = (height - Math.sin(3*Math.PI/180) * 260) / Math.cos(3*Math.PI/180)
+	}
+	return height
+  }
 
   const card = (
 	<div 
@@ -125,8 +126,13 @@ function Card({id, isplaceholder}) {
 
   return (
 	<>
-	  {isplaceholder ? placeholder : card}
-	  {isplaceholder ? createPortal(card, document.body) : null}
+	  {isplaceholder ? createPortal(card, document.body) : card}
+	  {isplaceholder ? 
+		<div 
+		  ref={placeholderRef} 
+		  className="rounded-lg shadow-sm w-260 bg-gray-200" 
+		  style={{height: `${getHeight()}px`}}/> 
+		: null}
 	</>
   )
 }
