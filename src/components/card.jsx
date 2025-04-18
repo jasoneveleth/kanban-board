@@ -70,7 +70,7 @@ function Card({id, isplaceholder}) {
 	}
   }
 
-  let className = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none";
+  let className = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none hover:shadow-lg transition-shadow duration-200 ease-in-out";
   if (isExpanded) {
     className = className + " px-13 py-8 border-3 border-pink-300"
   } else if (isSelected) {
@@ -82,10 +82,10 @@ function Card({id, isplaceholder}) {
   const getHeight = () => {
 	let height = ref.current?.getBoundingClientRect().height || 18
 	if (ref.current.style.transform.includes('rotate(3deg)')) {
-	  // we rorate when we drag it
+	  const threeDeg = 3 * Math.PI / 180
 	  // height = (boundingHeight - sin(3deb) * 260) / cos(3deg)
 	  // https://stackoverflow.com/a/54112751/13394797
-	  height = (height - Math.sin(3*Math.PI/180) * 260) / Math.cos(3*Math.PI/180)
+	  height = (height - Math.sin(threeDeg) * 260) / Math.cos(threeDeg)
 	}
 	return height
   }
