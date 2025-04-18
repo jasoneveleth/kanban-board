@@ -87,7 +87,7 @@ export function TaskProvider({ children }) {
   }
 
   const dropped = (id) => {
-	// TODO
+	setDragging({id: null})
   }
 
   const contextValue = {
