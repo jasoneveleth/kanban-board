@@ -29,26 +29,20 @@ function Card({id, isplaceholder}) {
   const handleMouseDown = (e) => {
 	if (!isExpanded) {
 	  mouseDownPosRef.current = {x: e.clientX, y: e.clientY}
-	  setAbsPos({x: 0, y: 0})
+	  const {x, y} = ref.current.getBoundingClientRect()
+	  setAbsPos({x, y})
+	  state.current = 'dragging'
+	  startDragging(id);
 	  window.addEventListener('mousemove', handleMouseMove)
 	  window.addEventListener('mouseup', handleMouseUp)
 	}
   }
 
   const handleMouseMove = (e) => {
-	const {x, y} = mouseDownPosRef.current;
 	if (state.current === 'dragging') {
+	  const {x, y} = mouseDownPosRef.current;
 	  const {x: realx, y: realy} = placeholderRef.current.getBoundingClientRect()
 	  setAbsPos({x: e.clientX - x + realx, y: e.clientY - y + realy})
-	} else if (x !== null && y !== null) {
-      const [dx, dy] = [e.clientX - x, e.clientY - y]
-      const distance = Math.sqrt(dx * dx + dy * dy);
-
-	  // bug: we need to do this because React doesn't update state fast enough for mouseMoves
-	  if (distance > 1) {
-		state.current = 'dragging';
-		startDragging(id);
-	  }
 	}
   }
 
@@ -87,7 +81,7 @@ function Card({id, isplaceholder}) {
 
   const getHeight = () => {
 	let height = ref.current?.getBoundingClientRect().height || 18
-	if (state.current === 'dragging') {
+	if (ref.current.style.transform.includes('rotate(3deg)')) {
 	  // we rorate when we drag it
 	  // height = (boundingHeight - sin(3deb) * 260) / cos(3deg)
 	  // https://stackoverflow.com/a/54112751/13394797
