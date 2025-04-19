@@ -65,7 +65,7 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
 	  />
 	  {isEditing && (
 		<div 
-		  className={`absolute bg-sky-400 blinking ${selectableClass}`}
+		  className={`absolute bg-sky-400 blinking pointer-events-none`}
 		  style={{
 			left: `${caretPos.left}px`,
 			top: `${caretPos.top}px`,
