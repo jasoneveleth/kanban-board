@@ -41,6 +41,8 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
   const handleClick = (e) => {
 	if (acceptingClicks) {
 	  e.stopPropagation();
+	} else {
+	  e.preventDefault();
 	}
   }
 
