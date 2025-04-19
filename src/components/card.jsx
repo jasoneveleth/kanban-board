@@ -109,7 +109,7 @@ function Card({id, isplaceholder}) {
 	  <Textbox 
 		value={notes}
 		placeholder="Notes" 
-		height={54}
+		minHeight={54}
 		acceptingClicks={isExpanded}
 		isEditing={isFieldEditing(id, 'notes')}
 		onChange={(x) => updateTask(id, 'notes', x)}

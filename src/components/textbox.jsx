@@ -6,9 +6,9 @@ function assert(condition, message) {
 	}
 }
 
-function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyle, acceptingClicks}) {
+function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorStyle, acceptingClicks}) {
   const [caretPos, setCaretPos] = useState({left: 0, top: 0, height: 0, onScreen: false});
-  const [textareaHeight, setTextareaHeight] = useState(0);
+  const [height, setHeight] = useState(0);
   const textareaRef = useRef(null);
 
   assert(!isEditing || acceptingClicks, "acceptingClicks should be true only when isEditing is true");
@@ -18,6 +18,7 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
       textareaRef.current.focus();
       const length = textareaRef.current.value.length;
       textareaRef.current.setSelectionRange(length, length);
+	  setHeight(textareaRef.current.scrollHeight);
       updateCaretPosition();
     }
   }, [isEditing]);
@@ -31,7 +32,7 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
 
   const handleChange = (e) => {
 	updateCaretPosition();
-	setTextareaHeight(e.target.scrollHeight);
+	setHeight(e.target.scrollHeight);
 	onChange(e.target.value);
   };
 
@@ -51,8 +52,8 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
 		className={className}
 		onChange={handleChange}
 		style={{
-		  height: textareaHeight,
-		  minHeight: height + 'px',
+		  height: height,
+		  minHeight: minHeight + 'px',
 		  lineHeight: '18px',
 		  cursor: cursorStyle || 'text',
 		}}
