@@ -83,7 +83,10 @@ export function TaskProvider({ children }) {
       if (e.key === 'Escape') {
         stopEditing();
       } else if (e.key === 'Enter') {
-        setEditingTask({taskId: selectedTaskId, field: 'title'});
+		if (!editingTask.taskId) {
+		  setEditingTask({taskId: selectedTaskId, field: 'title'});
+		  e.preventDefault()
+		}
       }
     };
     
@@ -101,6 +104,7 @@ export function TaskProvider({ children }) {
 
   const dropped = (id) => {
 	setDragging({id: null})
+	selectTask(id)
   }
 
   const contextValue = {
