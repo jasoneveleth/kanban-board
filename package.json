@@ -10,11 +10,12 @@
     "preview": "vite preview",
     "start": "vite start",
     "electron:build": "vite build && electron-builder",
-	"electron:start": "cross-env NODE_ENV=development electron main.cjs",
+    "electron:start": "cross-env NODE_ENV=development electron main.cjs",
     "electron:dev": "concurrently -k \"npm run dev\" \"npx wait-on tcp:5173 && npm run electron:start\""
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.3",
+    "framer-motion": "^12.7.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

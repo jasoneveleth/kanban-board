@@ -75,10 +75,6 @@ export function TaskProvider({ children }) {
   const isTaskEditing = (taskId) => editingTask.taskId === taskId;
 
   useEffect(() => {
-    console.log("Editing Task ID changed:", editingTask);
-  }, [editingTask]);
-
-  useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         stopEditing();

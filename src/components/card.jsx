@@ -2,6 +2,7 @@ import React, { useRef, useState, useLayoutEffect } from 'react';
 import Textbox from './textbox.jsx';
 import { useTaskContext } from './StateManager.jsx';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function Card({id, isplaceholder}) {
   const {
@@ -47,14 +48,14 @@ function Card({id, isplaceholder}) {
   }
 
   const handleMouseUp = (e) => {
-    if (state.current == 'dragging') {
+	if (state.current == 'dragging') {
 	  dropped(id);
-    }
+	}
 	state.current = 'settling'
-    mouseDownPosRef.current = {x: null, y: null};
+	mouseDownPosRef.current = {x: null, y: null};
 	setAbsPos({x: null, y: null})
-    window.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('mouseup', handleMouseUp);
+	window.removeEventListener('mousemove', handleMouseMove);
+	window.removeEventListener('mouseup', handleMouseUp);
   };
 
   // state can be either rest, dragging, or settling
@@ -72,7 +73,7 @@ function Card({id, isplaceholder}) {
 
   let classNameList = ["rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-md transition-shadow duration-200 ease-in-out"]
   if (isExpanded) {
-    classNameList.push("px-13 py-8 border-3 border-pink-300")
+	classNameList.push("px-13 py-8 border-3 border-pink-300")
   } else if (isSelected) {
 	classNameList.push("px-13 py-8 border-3 border-blue-400")
   } else {
@@ -97,37 +98,56 @@ function Card({id, isplaceholder}) {
 	return height
   }
 
-  const card = (
-	<div 
+  const cardContent = (
+	<motion.div
+	  layout="position"
+	  initial={{ opacity: 1 }}
+	  animate={{ opacity: 1 }}
+	  transition={{
+		layout: { duration: 0.075, ease: "easeOut" }
+	  }}
 	  ref={ref}
 	  className={className} 
 	  onClick={() => selectTask(id)} 
 	  onDoubleClick={() => startEditing(id, 'title')}
 	  onMouseDown={handleMouseDown}
 	  style={style}>
-	  <Textbox 
-		value={title} 
-		placeholder="New Task" 
-		acceptingClicks={isExpanded}
-		isEditing={isFieldEditing(id, 'title')} 
-		onChange={(x) => updateTask(id, 'title', x)}
-	    cursorStyle={isExpanded ? 'text' : 'pointer'}/>
-	  {isExpanded ? (
-	  <Textbox 
-		value={notes}
-		placeholder="Notes" 
-		minHeight={54}
-		acceptingClicks={isExpanded}
-		isEditing={isFieldEditing(id, 'notes')}
-		onChange={(x) => updateTask(id, 'notes', x)}
-	    cursorStyle={isExpanded ? 'text' : 'pointer'}/>
-	  ) : null}
-	</div>
+	  {/* Regular div for title to prevent layout animation */}
+	  <div>
+		<Textbox 
+		  value={title} 
+		  placeholder="New Task" 
+		  acceptingClicks={isExpanded}
+		  isEditing={isFieldEditing(id, 'title')} 
+		  onChange={(x) => updateTask(id, 'title', x)}
+		  cursorStyle={isExpanded ? 'text' : 'pointer'}/>
+	  </div>
+
+	  <AnimatePresence>
+		{isExpanded && (
+		  <motion.div
+			initial={{ opacity: 0, height: 0 }}
+			animate={{ opacity: 1, height: "auto" }}
+			exit={{ opacity: 0, height: 0 }}
+			transition={{ duration: 0.075 }}
+		  >
+			<Textbox 
+			  value={notes}
+			  placeholder="Notes" 
+			  minHeight={54}
+			  acceptingClicks={isExpanded}
+			  isEditing={isFieldEditing(id, 'notes')}
+			  onChange={(x) => updateTask(id, 'notes', x)}
+			  cursorStyle={isExpanded ? 'text' : 'pointer'}/>
+		  </motion.div>
+		)}
+	  </AnimatePresence>
+	</motion.div>
   )
 
   return (
 	<>
-	  {isplaceholder ? createPortal(card, document.body) : card}
+	  {isplaceholder ? createPortal(cardContent, document.body) : cardContent}
 	  {isplaceholder ? 
 		<div 
 		  ref={placeholderRef} 
@@ -139,4 +159,3 @@ function Card({id, isplaceholder}) {
 }
 
 export default Card;
-
