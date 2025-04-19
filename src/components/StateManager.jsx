@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useReducer } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const TaskContext = createContext();
 
@@ -38,11 +38,12 @@ export function TaskProvider({ children }) {
   });
 
   const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [isEditing, setIsEditing] = useState({taskId: null, field: null});
+  const [editingTask, setEditingTask] = useState({taskId: null, field: null});
 
   const selectTask = (id) => {
-	if (isEditing.taskId && isEditing.taskId !== id) {
-	  setIsEditing({taskId: null, field: null});
+	// if we're editing another task, stop editing when we select a new one
+	if (editingTask.taskId && editingTask.taskId !== id) {
+	  setEditingTask({taskId: null, field: null});
 	}
 	setSelectedTaskId(id);
   }
@@ -62,24 +63,36 @@ export function TaskProvider({ children }) {
 
   const startEditing = (taskId, field) => {
     setSelectedTaskId(taskId);
-    setIsEditing({taskId, field});
+    setEditingTask({taskId, field});
   };
 
   const stopEditing = () => {
-    setIsEditing({taskId: null, field: null});
+    setEditingTask({taskId: null, field: null});
   };
 
   const isTaskSelected = (taskId) => selectedTaskId === taskId;
-  const isFieldEditing = (taskId, field) => isEditing.taskId === taskId && isEditing.field === field;
-  const isTaskEditing = (taskId) => isEditing.taskId === taskId;
+  const isFieldEditing = (taskId, field) => editingTask.taskId === taskId && editingTask.field === field;
+  const isTaskEditing = (taskId) => editingTask.taskId === taskId;
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Escape') {
-      stopEditing();
-    } else if (e.key === 'Enter') {
-      setIsEditing({taskId: selectedTaskId, field: 'title'});
-    }
-  };
+  useEffect(() => {
+    console.log("Editing Task ID changed:", editingTask);
+  }, [editingTask]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        stopEditing();
+      } else if (e.key === 'Enter') {
+        setEditingTask({taskId: selectedTaskId, field: 'title'});
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedTaskId, editingTask]);
+
 
   const [dragging, setDragging] = useState({id: null, height: null});
   const startDragging = (id) => {
@@ -100,7 +113,6 @@ export function TaskProvider({ children }) {
     isTaskSelected,
     isFieldEditing,
 	isTaskEditing,
-    handleKeyDown,
 	startDragging,
 	dragging,
 	dropped,

@@ -32,6 +32,7 @@ function Card({id, isplaceholder}) {
 	  const {x, y} = ref.current.getBoundingClientRect()
 	  setAbsPos({x, y})
 	  state.current = 'dragging'
+	  selectTask(id)
 	  startDragging(id);
 	  window.addEventListener('mousemove', handleMouseMove)
 	  window.addEventListener('mouseup', handleMouseUp)
