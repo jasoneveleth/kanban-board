@@ -70,7 +70,7 @@ function Card({id, isplaceholder}) {
 	}
   }
 
-  let className = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none hover:shadow-lg transition-shadow duration-200 ease-in-out";
+  let className = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none hover:shadow-md transition-shadow duration-200 ease-in-out";
   if (isExpanded) {
     className = className + " px-13 py-8 border-3 border-pink-300"
   } else if (isSelected) {

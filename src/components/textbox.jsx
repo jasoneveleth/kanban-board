@@ -20,7 +20,9 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
       textareaRef.current.setSelectionRange(length, length);
 	  setHeight(textareaRef.current.scrollHeight);
       updateCaretPosition();
-    }
+    } else if (!isEditing && textareaRef.current) {
+		textareaRef.current.blur();
+	}
   }, [isEditing]);
 
   const updateCaretPosition = (e) => {
