@@ -70,14 +70,21 @@ function Card({id, isplaceholder}) {
 	}
   }
 
-  let className = "rounded-lg shadow-sm w-260 bg-white cursor-pointer card select-none hover:shadow-md transition-shadow duration-200 ease-in-out";
+  let classNameList = ["rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-md transition-shadow duration-200 ease-in-out"]
   if (isExpanded) {
-    className = className + " px-13 py-8 border-3 border-pink-300"
+    classNameList.push("px-13 py-8 border-3 border-pink-300")
   } else if (isSelected) {
-    className = className + " px-13 py-8 border-3 border-blue-400"
+	classNameList.push("px-13 py-8 border-3 border-blue-400")
   } else {
-	className = className + " px-15 py-10 border border-gray-300"
+	classNameList.push("px-15 py-10 border border-gray-300")
   }
+
+  if (state.current === 'dragging') {
+	classNameList.push("cursor-grabbing")
+  } else {
+	classNameList.push("cursor-pointer")
+  }
+  const className = classNameList.join(' ')
 
   const getHeight = () => {
 	let height = ref.current?.getBoundingClientRect().height || 18

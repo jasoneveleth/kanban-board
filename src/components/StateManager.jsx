@@ -104,7 +104,9 @@ export function TaskProvider({ children }) {
 
   const dropped = (id) => {
 	setDragging({id: null})
-	selectTask(id)
+	if (!editingTask.taskId) {
+	  setSelectedTaskId(id);
+	}
   }
 
   const contextValue = {
