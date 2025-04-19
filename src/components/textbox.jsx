@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 function assert(condition, message) {
 	if (!condition) {
@@ -12,6 +12,15 @@ function TextBox({onChange, value, placeholder, isEditing, height=18, cursorStyl
   const textareaRef = useRef(null);
 
   assert(!isEditing || acceptingClicks, "acceptingClicks should be true only when isEditing is true");
+
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.focus();
+      const length = textareaRef.current.value.length;
+      textareaRef.current.setSelectionRange(length, length);
+      updateCaretPosition();
+    }
+  }, [isEditing]);
 
   const updateCaretPosition = (e) => {
 	const coordinates = getCaretCoordinates(textareaRef);
