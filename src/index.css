@@ -79,7 +79,7 @@ button:focus-visible {
 }
 
 @keyframes blink {
-  40% { opacity: 0; }
+  45% { opacity: 0; }
 }
 
 .blinking {

@@ -21,7 +21,7 @@ function Card({id, isplaceholder}) {
   const isSelected = isTaskSelected(id)
 
   const state = useRef('rest') // rest, dragging, settling
-  const mouseDownPosRef = useRef({x: null, y: null, dragging: null});
+  const mouseDownPosRef = useRef({x: null, y: null});
   const [absPos, setAbsPos] = useState({x: null, y: null});
 
   const ref = useRef();
@@ -32,8 +32,6 @@ function Card({id, isplaceholder}) {
 	  mouseDownPosRef.current = {x: e.clientX, y: e.clientY}
 	  const {x, y} = ref.current.getBoundingClientRect()
 	  setAbsPos({x, y})
-	  state.current = 'dragging'
-	  startDragging(id);
 	  window.addEventListener('mousemove', handleMouseMove)
 	  window.addEventListener('mouseup', handleMouseUp)
 	}
@@ -44,7 +42,15 @@ function Card({id, isplaceholder}) {
 	  const {x, y} = mouseDownPosRef.current;
 	  const {x: realx, y: realy} = placeholderRef.current.getBoundingClientRect()
 	  setAbsPos({x: e.clientX - x + realx, y: e.clientY - y + realy})
-	}
+	} else {
+      const dx = Math.abs(e.clientX - mouseDownPosRef.current.x);
+      const dy = Math.abs(e.clientY - mouseDownPosRef.current.y);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance > 1) {
+        state.current = 'dragging'
+        startDragging(id);
+      }
+    }
   }
 
   const handleMouseUp = (e) => {
@@ -88,7 +94,7 @@ function Card({id, isplaceholder}) {
   const className = classNameList.join(' ')
 
   const getHeight = () => {
-	let height = ref.current?.getBoundingClientRect().height || 18
+	let height = ref.current.getBoundingClientRect().height || 18
 	if (ref.current.style.transform.includes('rotate(3deg)')) {
 	  const threeDeg = 3 * Math.PI / 180
 	  // height = (boundingHeight - sin(3deb) * 260) / cos(3deg)
@@ -99,13 +105,7 @@ function Card({id, isplaceholder}) {
   }
 
   const cardContent = (
-	<motion.div
-	  layout="position"
-	  initial={{ opacity: 1 }}
-	  animate={{ opacity: 1 }}
-	  transition={{
-		layout: { duration: 0.075, ease: "easeOut" }
-	  }}
+	<div
 	  ref={ref}
 	  className={className} 
 	  onClick={() => selectTask(id)} 
@@ -142,7 +142,7 @@ function Card({id, isplaceholder}) {
 		  </motion.div>
 		)}
 	  </AnimatePresence>
-	</motion.div>
+	</div>
   )
 
   return (
