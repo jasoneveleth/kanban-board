@@ -6,6 +6,8 @@ function assert(condition, message) {
 	}
 }
 
+const lineHeight = 18; // px
+
 function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorStyle, acceptingClicks}) {
   const [caretPos, setCaretPos] = useState({left: 0, top: 0, height: 0, onScreen: false});
   const [height, setHeight] = useState(0);
@@ -20,11 +22,11 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
       textareaRef.current.focus();
       const length = textareaRef.current.value.length;
       textareaRef.current.setSelectionRange(length, length);
-      setHeight(textareaRef.current.scrollHeight);
-      updateCaretPosition();
+      updateCaretAndHeight()
       resetIdleTimer();
     } else if (!isEditing && textareaRef.current) {
       textareaRef.current.blur();
+      updateCaretAndHeight()
       clearIdleTimer();
     }
   }, [isEditing]);
@@ -47,16 +49,17 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
     }
   };
 
-  const updateCaretPosition = (e) => {
-    const coordinates = getCaretCoordinates(textareaRef);
-    if (coordinates) {
-      setCaretPos(coordinates);
-    }
+  const updateCaretAndHeight = (e) => {
+    if (!isEditing) return
+    const metrics = measureTextarea(textareaRef);
+    if (!metrics) return;
+    const {left, top, caretHeight, onScreen, divHeight} = metrics;
+    setCaretPos({left, top, height: caretHeight, onScreen});
+    setHeight(divHeight);
   };
 
   const handleChange = (e) => {
-    updateCaretPosition();
-    setHeight(e.target.scrollHeight);
+    updateCaretAndHeight()
     onChange(e.target.value);
     resetIdleTimer();
   };
@@ -68,10 +71,16 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
     } else {
       e.preventDefault();
     }
+    updateCaretAndHeight()
+  }
+
+  const handleKeyUp = (e) => {
+    resetIdleTimer()
+    updateCaretAndHeight()
   }
 
   const selectableClass = acceptingClicks ? '' : 'pointer-events-none';
-  const className = `border-none outline-none caret-transparent resize-none font-size-15px w-full placeholder-gray-400 font-sans ${selectableClass}`;
+  const className = `border-none outline-none resize-none text-[15px] caret-transparent w-full placeholder-gray-400 font-sans ${selectableClass}`;
   const blinkingClass = isIdle ? 'blinking' : '';
 
   return (
@@ -81,17 +90,16 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
         className={className}
         onChange={handleChange}
         onKeyDown={resetIdleTimer}
-        onKeyUp={resetIdleTimer}
+        onKeyUp={handleKeyUp}
         style={{
           height: height,
           minHeight: minHeight + 'px',
-          lineHeight: '18px',
+          lineHeight: `${lineHeight}px`,
           cursor: cursorStyle || 'text',
         }}
         value={value}
         placeholder={placeholder}
-        onMouseUp={updateCaretPosition}
-        onKeyUp={updateCaretPosition}
+        onMouseUp={updateCaretAndHeight}
         onDoubleClick={handleClick}
         onClick={handleClick}
       />
@@ -110,63 +118,67 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
   );
 }
 
-function getCaretCoordinates(textareaRef) {
+function measureTextarea(textareaRef) {
   const textarea = textareaRef.current;
-
   if (!textarea) return;
 
-  if (window.getSelection && window.getSelection().rangeCount > 0) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
+  // create mirror div
+  const div = document.createElement('div');
+  div.style.position = 'absolute';
+  div.style.visibility = 'hidden';
+  div.style.width = `${textarea.offsetWidth}px`;
 
-    const div = document.createElement('div');
-    div.style.position = 'absolute';
-    div.style.visibility = 'hidden';
-    div.style.width = `${textarea.offsetWidth}px`;
+  // styles to match textarea
+  const computedStyle = window.getComputedStyle(textarea);
+  const stylesToCopy = [
+    'font-family', 'font-size', 'font-weight', 'letter-spacing',
+    'line-height', 'text-transform', 'word-spacing', 'padding-top',
+    'padding-right', 'padding-bottom', 'padding-left', 'border-width',
+    'box-sizing', 'overflow', 'white-space', 'min-height'
+  ];
 
-    // styles to match textarea
-    const computedStyle = window.getComputedStyle(textarea);
-    const stylesToCopy = [
-      'font-family', 'font-size', 'font-weight', 'letter-spacing',
-      'line-height', 'text-transform', 'word-spacing', 'padding-top',
-      'padding-right', 'padding-bottom', 'padding-left', 'border-width',
-      'box-sizing', 'height', 'overflow', 'white-space'
-    ];
+  stylesToCopy.forEach(style => {
+    div.style[style] = computedStyle[style];
+  });
 
-    stylesToCopy.forEach(style => {
-      div.style[style] = computedStyle[style];
-    });
+  const charOffset = textarea.selectionDirection === 'backward' ? textarea.selectionStart : textarea.selectionEnd;
+  const textUntilCaret = textarea.value.substring(0, charOffset);
+  const textWithLineBreaks = textUntilCaret.replace(/\n/g, '<br>')
+  div.innerHTML = textWithLineBreaks;
 
-    const textUntilCaret = textarea.value.substring(0, textarea.selectionStart);
-    div.textContent = textUntilCaret;
-    const caretSpan = document.createElement('span');
-    caretSpan.textContent = selectedText.length ? selectedText : '.';
-    caretSpan.style.backgroundColor = 'transparent';
-    caretSpan.style.color = 'transparent';
-    div.appendChild(caretSpan);
-    div.appendChild(document.createTextNode(textarea.value.substring(end)));
-    document.body.appendChild(div);
+  const caretSpan = document.createElement('span');
+  caretSpan.innerHTML = '.';
+  caretSpan.style.backgroundColor = 'transparent';
+  caretSpan.style.color = 'transparent';
+  div.appendChild(caretSpan);
 
-    const caretRect = caretSpan.getBoundingClientRect();
-    const divRect = div.getBoundingClientRect();
+  const remainingText = textarea.value.substring(charOffset).replace(/\n/g, '<br>')
+  const remainingSpan = document.createElement('span');
+  remainingSpan.innerHTML = remainingText;
+  div.appendChild(remainingSpan)
 
-    // Calculate relative position to the textarea
-    const x = caretRect.left - divRect.left - textarea.scrollLeft;
-    const y = caretRect.top - divRect.top - textarea.scrollTop;
-    const height = caretRect.height;
+  document.body.appendChild(div);
 
-    // Clean up
-    document.body.removeChild(div);
-    const onScreen = y >= 0 && (y+height) <= textarea.offsetHeight;
+  const caretRect = caretSpan.getBoundingClientRect();
+  const divRect = div.getBoundingClientRect();
+  const divHeight = div.offsetHeight
 
-    // IMPORTANT: Adjust for textarea scroll position
-    return { 
-      left: x, 
-      top: y, 
-      height: height,
-      onScreen: onScreen
-    };
+  // Calculate relative position to the textarea
+  const x = caretRect.left - divRect.left - textarea.scrollLeft;
+  const y = caretRect.top - divRect.top - textarea.scrollTop;
+  const caretHeight = caretRect.height;
+
+  // Clean up
+  document.body.removeChild(div);
+  const onScreen = y >= 0 && (y+caretHeight) <= textarea.offsetHeight;
+
+  // IMPORTANT: Adjust for textarea scroll position
+  return { 
+    left: x, 
+    top: y, 
+    caretHeight: lineHeight,
+    onScreen: onScreen,
+    divHeight,
   }
 }
 
