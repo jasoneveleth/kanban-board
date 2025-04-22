@@ -120,6 +120,7 @@ function Card({id, isplaceholder}) {
 		  acceptingClicks={isExpanded}
 		  isEditing={isFieldEditing(id, 'title')} 
 		  onChange={(x) => updateTask(id, 'title', x)}
+          onClick={() => startEditing(id, 'title')}
 		  cursorStyle={isExpanded ? 'text' : 'pointer'}/>
 	  </div>
 
@@ -138,6 +139,7 @@ function Card({id, isplaceholder}) {
 			  acceptingClicks={isExpanded}
 			  isEditing={isFieldEditing(id, 'notes')}
 			  onChange={(x) => updateTask(id, 'notes', x)}
+              onClick={() => startEditing(id, 'notes')}
 			  cursorStyle={isExpanded ? 'text' : 'pointer'}/>
 		  </motion.div>
 		)}

@@ -8,7 +8,7 @@ function assert(condition, message) {
 
 const lineHeight = 18; // px
 
-function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorStyle, acceptingClicks}) {
+function TextBox({onChange, onClick, value, placeholder, isEditing, minHeight=18, cursorStyle, acceptingClicks}) {
   const [caretPos, setCaretPos] = useState({left: 0, top: 0, height: 0, onScreen: false});
   const [height, setHeight] = useState(0);
   const [isIdle, setIsIdle] = useState(false);
@@ -68,6 +68,7 @@ function TextBox({onChange, value, placeholder, isEditing, minHeight=18, cursorS
     if (acceptingClicks) {
       e.stopPropagation();
       resetIdleTimer();
+      onClick && onClick(e);
     } else {
       e.preventDefault();
     }

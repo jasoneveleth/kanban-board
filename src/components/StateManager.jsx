@@ -62,6 +62,10 @@ export function TaskProvider({ children }) {
   };
 
   const startEditing = (taskId, field) => {
+    if (taskId === editingTask.taskId && field === editingTask.field) {
+      // already editing this task and field
+      return;
+    }
     setSelectedTaskId(taskId);
     setEditingTask({taskId, field});
   };
