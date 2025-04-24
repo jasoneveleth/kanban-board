@@ -37,6 +37,14 @@ export function TaskProvider({ children }) {
     setSelectedTaskId(id);
   }
 
+  const editAndSelectTask = (id, field) => {
+    if (editingTask.taskId && editingTask.taskId !== id) {
+      setEditingTask({taskId: null, field: null});
+    }
+    setSelectedTaskId(id);
+    setEditingTask({taskId: id, field});
+  }
+
   const updateTask = (taskId, field, value) => {
     setTaskData(prevData => {
       const updatedTask = {
@@ -70,7 +78,8 @@ export function TaskProvider({ children }) {
       
       setTaskData(await electronStore.getTasks());
       setColState(await electronStore.getColumns());
-      
+
+      editAndSelectTask(id, 'title');
       return id;
     } catch (error) {
       console.error('Failed to create task:', error);
@@ -173,6 +182,11 @@ export function TaskProvider({ children }) {
           setEditingTask({taskId: selectedTaskId, field: 'title'});
           e.preventDefault();
         }
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        if (selectedTaskId) {
+          deleteTask(selectedTaskId);
+          e.preventDefault();
+        }
       } else if (e.ctrlKey || e.metaKey) {
         // Handle keyboard shortcuts
         if (e.key === 'z') {
@@ -242,6 +256,7 @@ export function TaskProvider({ children }) {
     isTaskSelected,
     isFieldEditing,
     isTaskEditing,
+    editAndSelectTask,
     startDragging,
     dragging,
     dropped,

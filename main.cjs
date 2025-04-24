@@ -65,7 +65,6 @@ ipcMain.handle('store:getColumns', () => {
 });
 
 ipcMain.handle('store:createTask', (_, taskData, columnName) => {
-  console.log('here', columnName)
   return todoStore.createTask(taskData, columnName);
 });
 
