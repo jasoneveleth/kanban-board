@@ -132,6 +132,7 @@ function Card({id, isplaceholder}) {
 			exit={{ opacity: 0, height: 0 }}
 			transition={{ duration: 0.075 }}
 		  >
+            <div className="h-9"/>
 			<Textbox 
 			  value={notes}
 			  placeholder="Notes" 
