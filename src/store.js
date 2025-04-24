@@ -174,7 +174,8 @@ const todoStore = {
     }
     
     // Calculate new index
-    let newIndex = Math.min(0, Math.max(column.length - 1, currentIndex + isUp ? -1 : 1));
+    const clip = (x) => Math.max(0, Math.min(column.length - 1, x));
+    let newIndex = clip(currentIndex + (isUp ? -1 : 1));
 
     // If no change in position, return
     if (newIndex === currentIndex) {

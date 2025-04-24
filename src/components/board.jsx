@@ -3,7 +3,7 @@ import Card from './card.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
 function Board() {
-  const {taskData, colState, handleKeyDown, dragging, createNewTask} = useTaskContext();
+  const {taskData, colState, dragging, createNewTask} = useTaskContext();
   const colNames = Object.keys(colState);
 
   const tasks = (colName) => {
