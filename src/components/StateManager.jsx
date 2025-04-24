@@ -78,8 +78,8 @@ export function TaskProvider({ children }) {
       
       setTaskData(await electronStore.getTasks());
       setColState(await electronStore.getColumns());
-
       editAndSelectTask(id, 'title');
+
       return id;
     } catch (error) {
       console.error('Failed to create task:', error);

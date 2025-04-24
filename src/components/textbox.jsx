@@ -79,6 +79,14 @@ function TextBox({onChange, onClick, value, placeholder, isEditing, minHeight=18
     updateCaretAndHeight()
   }
 
+  const handleKeyDown = (e) => {
+    resetIdleTimer();
+    updateCaretAndHeight()
+    if (isEditing && (e.key === 'Backspace' || e.key === 'Delete')) {
+      e.stopPropagation();
+    }
+  };
+
   const selectableClass = acceptingClicks ? '' : 'pointer-events-none';
   const className = `border-none outline-none resize-none text-[15px] caret-transparent w-full placeholder-gray-400 font-sans ${selectableClass}`;
   const blinkingClass = isIdle ? 'blinking' : '';
@@ -89,7 +97,7 @@ function TextBox({onChange, onClick, value, placeholder, isEditing, minHeight=18
         ref={textareaRef}
         className={className}
         onChange={handleChange}
-        onKeyDown={resetIdleTimer}
+        onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
         style={{
           height: height,
