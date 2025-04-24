@@ -50,7 +50,6 @@ function TextBox({onChange, onClick, value, placeholder, isEditing, minHeight=18
   };
 
   const updateCaretAndHeight = (e) => {
-    if (!isEditing) return
     const metrics = measureTextarea(textareaRef);
     if (!metrics) return;
     const {left, top, caretHeight, onScreen, divHeight} = metrics;
