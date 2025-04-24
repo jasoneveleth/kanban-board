@@ -1,6 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
+const todoStore = require('./src/store').default;
 
 let mainWindow;
 
@@ -11,7 +12,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js') // Optional but recommended
+      preload: path.join(__dirname, 'src/preload.js'),
+	  enableRemoteModule: false
     }
   });
 
@@ -47,4 +49,62 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+// Set up IPC handlers for the store
+ipcMain.handle('store:getTasks', () => {
+  return todoStore.getTasks();
+});
+
+ipcMain.handle('store:getTask', (_, id) => {
+  return todoStore.getTask(id);
+});
+
+ipcMain.handle('store:getColumns', () => {
+  return todoStore.getColumns();
+});
+
+ipcMain.handle('store:createTask', (_, taskData, columnName) => {
+  console.log('here', columnName)
+  return todoStore.createTask(taskData, columnName);
+});
+
+ipcMain.handle('store:updateTask', (_, id, task) => {
+  return todoStore.updateTask(id, task);
+});
+
+ipcMain.handle('store:moveTaskBtwnCol', (_, taskId, fromColumn, toColumn, newIndex) => {
+  return todoStore.moveTaskBtwnCol(taskId, fromColumn, toColumn, newIndex);
+});
+
+ipcMain.handle('store:moveTaskInCol', (_, taskId, columnName, isUp) => {
+  return todoStore.moveTaskInCol(taskId, columnName, isUp);
+});
+
+ipcMain.handle('store:deleteTask', (_, id) => {
+  return todoStore.deleteTask(id);
+});
+
+ipcMain.handle('store:updateColumns', (_, newIdLists, operationDetails) => {
+  return todoStore.updateColumns(newIdLists, operationDetails);
+});
+
+ipcMain.handle('store:canUndo', () => {
+  return todoStore.canUndo();
+});
+
+ipcMain.handle('store:canRedo', () => {
+  return todoStore.canRedo();
+});
+
+ipcMain.handle('store:undo', () => {
+  return todoStore.undo();
+});
+
+ipcMain.handle('store:redo', () => {
+  return todoStore.redo();
+});
+
+ipcMain.handle('store:getUndoStack', () => {
+  return todoStore.getUndoStack();
 });
