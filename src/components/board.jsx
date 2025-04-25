@@ -2,6 +2,17 @@ import React, { useState } from 'react';
 import Card from './card.jsx';
 import { useTaskContext } from './StateManager.jsx';
 
+function KeyIcon({ letter, tooltip, ...props }) {
+  return (
+    <span 
+      className="inline-flex items-center justify-center bg-white h-20 w-20 border border-gray-300 rounded shadow-sm text-xs font-medium mr-8" 
+      {...props} >
+      {letter}
+	</span>
+  );
+}
+
+// Usage
 function Board() {
   const {colState, dragging, createNewTask} = useTaskContext();
   const colNames = Object.keys(colState);
@@ -27,7 +38,12 @@ function Board() {
 		<div key={name} className="flex flex-col gap-10 min-w-260">
 		  <h2 className="font-semibold ml-5">{name}</h2>
 		  {tasks(name)}
-		  <h2 onClick={() => addTaskClicked(name)} className="pl-20">+ Add Task</h2>
+
+		  <div className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded" onClick={() => addTaskClicked(name)}>
+			<KeyIcon letter="A" tooltip="Press A" />
+			<span>Add Task</span>
+		  </div>
+
 		</div>
 	  ))}
 	</div>
