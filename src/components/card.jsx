@@ -4,7 +4,7 @@ import { useTaskContext } from './StateManager.jsx'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 
-function Card({ id, isplaceholder }) {
+function Card({ id }) {
   const {
     selectTask,
     startEditing,
@@ -68,17 +68,24 @@ function Card({ id, isplaceholder }) {
 
   const handleMouseUp = (e) => {
     if (state.current === 'dragging') {
-      dropped(id)
-      // Reset motion values with animation
+      state.current = 'settling'
+
       x.set(0)
       y.set(0)
       rotate.set(0)
     }
-    state.current = 'settling'
+
     mouseDownPosRef.current = { x: null, y: null }
     setAbsPos({ x: null, y: null })
     window.removeEventListener('mousemove', handleMouseMove)
     window.removeEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleAnimationComplete = () => {
+    console.log('HERE!')
+    console.assert(state.current == 'settling')
+    state.current = 'rest'
+    dropped(id)
   }
 
   let classNameList = [
@@ -128,6 +135,7 @@ function Card({ id, isplaceholder }) {
       transition={
         state.current !== 'dragging' ? springTransition : instantTransition
       }
+      onAnimationComplete={handleAnimationComplete}
       ref={ref}
       className={className}
       onClick={() => selectTask(id)}
@@ -161,7 +169,7 @@ function Card({ id, isplaceholder }) {
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            transition={{ duration: 0.075 }}>
+            transition={{ duration: 0.08 }}>
             <div className="h-9" />
             <Textbox
               value={notes}
@@ -179,6 +187,7 @@ function Card({ id, isplaceholder }) {
     </motion.div>
   )
 
+  // this needs to be a function since we need to delay the call to getHeight()
   const shadow = () => (
     <div
       ref={placeholderRef}
@@ -187,10 +196,12 @@ function Card({ id, isplaceholder }) {
     />
   )
 
+  const hasShadow = state.current === 'dragging' || state.current === 'settling'
+
   return (
     <>
-      {isplaceholder ? createPortal(cardContent, document.body) : cardContent}
-      {isplaceholder ? shadow() : null}
+      {hasShadow ? createPortal(cardContent, document.body) : cardContent}
+      {hasShadow ? shadow() : null}
     </>
   )
 }

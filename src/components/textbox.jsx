@@ -1,11 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 
-function assert(condition, message) {
-  if (!condition) {
-    throw new Error(message)
-  }
-}
-
 const lineHeight = 18 // px
 
 function TextBox({
@@ -29,7 +23,7 @@ function TextBox({
   const textareaRef = useRef(null)
   const idleTimerRef = useRef(null)
 
-  assert(
+  console.assert(
     !isEditing || acceptingClicks,
     'acceptingClicks should be true only when isEditing is true',
   )
