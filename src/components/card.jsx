@@ -141,8 +141,7 @@ function Card({ id, isplaceholder }) {
         top: state.current === 'dragging' ? absPos.y : 'auto',
         left: state.current === 'dragging' ? absPos.x : 'auto',
         zIndex: state.current === 'dragging' ? 1000 : 'auto',
-      }}
-    >
+      }}>
       {/* Regular div for title to prevent layout animation */}
       <div>
         <Textbox
@@ -157,19 +156,25 @@ function Card({ id, isplaceholder }) {
       </div>
 
       {isExpanded && (
-        <>
-          <div className="h-9" />
-          <Textbox
-            value={notes}
-            placeholder="Notes"
-            minHeight={54}
-            acceptingClicks={isExpanded}
-            isEditing={isFieldEditing(id, 'notes')}
-            onChange={(x) => updateTask(id, 'notes', x)}
-            onClick={() => startEditing(id, 'notes')}
-            cursorStyle={isExpanded ? 'text' : 'pointer'}
-          />
-        </>
+        <AnimatePresence>
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.075 }}>
+            <div className="h-9" />
+            <Textbox
+              value={notes}
+              placeholder="Notes"
+              minHeight={54}
+              acceptingClicks={isExpanded}
+              isEditing={isFieldEditing(id, 'notes')}
+              onChange={(x) => updateTask(id, 'notes', x)}
+              onClick={() => startEditing(id, 'notes')}
+              cursorStyle={isExpanded ? 'text' : 'pointer'}
+            />
+          </motion.div>
+        </AnimatePresence>
       )}
     </motion.div>
   )
