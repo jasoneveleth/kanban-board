@@ -83,9 +83,10 @@ function Card({ id }) {
 
   const handleAnimationComplete = () => {
     console.log('HERE!')
-    console.assert(state.current == 'settling')
-    state.current = 'rest'
-    dropped(id)
+    if (state.current == 'settling') {
+      state.current = 'rest'
+      dropped(id)
+    }
   }
 
   let classNameList = [
@@ -135,7 +136,7 @@ function Card({ id }) {
       transition={
         state.current !== 'dragging' ? springTransition : instantTransition
       }
-      onAnimationComplete={handleAnimationComplete}
+      onLayoutAnimationComplete={handleAnimationComplete}
       ref={ref}
       className={className}
       onClick={() => selectTask(id)}
