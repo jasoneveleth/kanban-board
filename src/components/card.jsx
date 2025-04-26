@@ -114,8 +114,8 @@ function Card({ id, isplaceholder }) {
 
   const springTransition = {
     type: 'spring',
-    stiffness: 300,
-    damping: 20,
+    stiffness: 400,
+    damping: 30,
   }
 
   const instantTransition = {
@@ -155,12 +155,12 @@ function Card({ id, isplaceholder }) {
         />
       </div>
 
-      {isExpanded && (
-        <AnimatePresence>
+      <AnimatePresence>
+        {isExpanded && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ height: 0 }}
+            animate={{ height: 'auto' }}
+            exit={{ height: 0 }}
             transition={{ duration: 0.075 }}>
             <div className="h-9" />
             <Textbox
@@ -174,8 +174,8 @@ function Card({ id, isplaceholder }) {
               cursorStyle={isExpanded ? 'text' : 'pointer'}
             />
           </motion.div>
-        </AnimatePresence>
-      )}
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 
