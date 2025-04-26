@@ -82,7 +82,6 @@ function Card({ id }) {
   }
 
   const handleAnimationComplete = () => {
-    console.log('HERE!')
     if (state.current == 'settling') {
       state.current = 'rest'
       dropped(id)
@@ -90,7 +89,7 @@ function Card({ id }) {
   }
 
   let classNameList = [
-    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-md transition-shadow duration-200 ease-in-out overflow-hidden',
+    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-lg transition-shadow duration-200 ease-in-out overflow-hidden',
   ]
   if (isExpanded) {
     classNameList.push('px-13 py-8 border-3 border-pink-300')
@@ -189,22 +188,29 @@ function Card({ id }) {
   )
 
   // this needs to be a function since we need to delay the call to getHeight()
-  const shadow = () => (
-    <div
-      ref={placeholderRef}
-      className="rounded-lg shadow-sm w-260 bg-gray-200"
-      style={{ height: `${getHeight()}px` }}
-    />
-  )
+  const shadow = () => {
+    const opacity = state.current === 'settling' ? 'opacity-20' : ''
+    return (
+      <div
+        ref={placeholderRef}
+        className={`rounded-lg shadow-sm w-260 bg-gray-200 ${opacity}`}
+        style={{ height: `${getHeight()}px` }}
+      />
+    )
+  }
 
   const hasShadow = state.current === 'dragging' || state.current === 'settling'
-
   return (
-    <>
-      {hasShadow ? createPortal(cardContent, document.body) : cardContent}
-      {hasShadow ? shadow() : null}
-    </>
+    <div className="grid grid-cols-1 grid-rows-1">
+      {hasShadow && (
+        <div className="col-start-1 row-start-1 z-0">{shadow()}</div>
+      )}
+      {state.current === 'dragging' ? (
+        createPortal(cardContent, document.body)
+      ) : (
+        <div className="col-start-1 row-start-1 z-10">{cardContent}</div>
+      )}
+    </div>
   )
 }
-
 export default Card
