@@ -4,7 +4,7 @@ import { useTaskContext } from './StateManager.jsx'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 
-function Card({ id, isplaceholder }) {
+function Card({ id }) {
   const {
     selectTask,
     startEditing,
@@ -68,21 +68,28 @@ function Card({ id, isplaceholder }) {
 
   const handleMouseUp = (e) => {
     if (state.current === 'dragging') {
-      dropped(id)
-      // Reset motion values with animation
+      state.current = 'settling'
+
       x.set(0)
       y.set(0)
       rotate.set(0)
     }
-    state.current = 'settling'
+
     mouseDownPosRef.current = { x: null, y: null }
     setAbsPos({ x: null, y: null })
     window.removeEventListener('mousemove', handleMouseMove)
     window.removeEventListener('mouseup', handleMouseUp)
   }
 
+  const handleAnimationComplete = () => {
+    if (state.current == 'settling') {
+      state.current = 'rest'
+      dropped(id)
+    }
+  }
+
   let classNameList = [
-    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-md transition-shadow duration-200 ease-in-out overflow-hidden',
+    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-lg transition-shadow duration-200 ease-in-out overflow-hidden',
   ]
   if (isExpanded) {
     classNameList.push('px-13 py-8 border-3 border-pink-300')
@@ -128,6 +135,7 @@ function Card({ id, isplaceholder }) {
       transition={
         state.current !== 'dragging' ? springTransition : instantTransition
       }
+      onLayoutAnimationComplete={handleAnimationComplete}
       ref={ref}
       className={className}
       onClick={() => selectTask(id)}
@@ -161,7 +169,7 @@ function Card({ id, isplaceholder }) {
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
-            transition={{ duration: 0.075 }}>
+            transition={{ duration: 0.08 }}>
             <div className="h-9" />
             <Textbox
               value={notes}
@@ -179,20 +187,30 @@ function Card({ id, isplaceholder }) {
     </motion.div>
   )
 
-  const shadow = () => (
-    <div
-      ref={placeholderRef}
-      className="rounded-lg shadow-sm w-260 bg-gray-200"
-      style={{ height: `${getHeight()}px` }}
-    />
-  )
+  // this needs to be a function since we need to delay the call to getHeight()
+  const shadow = () => {
+    const opacity = state.current === 'settling' ? 'opacity-20' : ''
+    return (
+      <div
+        ref={placeholderRef}
+        className={`rounded-lg shadow-sm w-260 bg-gray-200 ${opacity}`}
+        style={{ height: `${getHeight()}px` }}
+      />
+    )
+  }
 
+  const hasShadow = state.current === 'dragging' || state.current === 'settling'
   return (
-    <>
-      {isplaceholder ? createPortal(cardContent, document.body) : cardContent}
-      {isplaceholder ? shadow() : null}
-    </>
+    <div className="grid grid-cols-1 grid-rows-1">
+      {hasShadow && (
+        <div className="col-start-1 row-start-1 z-0">{shadow()}</div>
+      )}
+      {state.current === 'dragging' ? (
+        createPortal(cardContent, document.body)
+      ) : (
+        <div className="col-start-1 row-start-1 z-10">{cardContent}</div>
+      )}
+    </div>
   )
 }
-
 export default Card

@@ -14,13 +14,11 @@ function KeyIcon({ letter, tooltip, ...props }) {
 
 // Usage
 function Board() {
-  const { colState, dragging, createNewTask } = useTaskContext()
+  const { colState, createNewTask } = useTaskContext()
   const colNames = Object.keys(colState)
 
   const tasks = (colName) => {
-    let taskList = colState[colName].map((id) => (
-      <Card key={id} id={id} isplaceholder={id === dragging.id} />
-    ))
+    let taskList = colState[colName].map((id) => <Card key={id} id={id} />)
     return taskList
   }
 
