@@ -6,8 +6,7 @@ function KeyIcon({ letter, tooltip, ...props }) {
   return (
     <span
       className="inline-flex items-center justify-center bg-white h-20 w-20 border border-gray-300 rounded shadow-sm text-xs font-medium mr-8"
-      {...props}
-    >
+      {...props}>
       {letter}
     </span>
   )
@@ -38,8 +37,7 @@ function Board() {
 
           <div
             className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded"
-            onClick={() => addTaskClicked(name)}
-          >
+            onClick={() => addTaskClicked(name)}>
             <KeyIcon letter="A" tooltip="Press A" />
             <span>Add Task</span>
           </div>

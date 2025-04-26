@@ -82,7 +82,7 @@ function Card({ id, isplaceholder }) {
   }
 
   let classNameList = [
-    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-md transition-shadow duration-200 ease-in-out',
+    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-md transition-shadow duration-200 ease-in-out overflow-hidden',
   ]
   if (isExpanded) {
     classNameList.push('px-13 py-8 border-3 border-pink-300')
