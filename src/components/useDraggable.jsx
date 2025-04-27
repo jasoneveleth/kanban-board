@@ -1,23 +1,33 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useMotionValue } from 'framer-motion'
+import { useTaskContext } from './StateManager.jsx'
 
-function useDraggable({ onDragStart, onDragEnd, onSettle, isExpanded }) {
+function useDraggable({ id, onDragEnd, isExpanded }) {
+  const { startDragging } = useTaskContext()
+  const elementRef = useRef(null)
   const dragState = useRef('rest') // rest, dragging, settling
   const mouseDownPosRef = useRef({ x: null, y: null })
   const [absPos, setAbsPos] = useState({ x: null, y: null })
-
-  const ref = useRef()
 
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const rotate = useMotionValue(0)
 
+  // Clean up event listeners on unmount
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
   const getElementHeight = () => {
-    if (!ref.current) return 18
-    let height = ref.current.getBoundingClientRect().height || 18
+    if (!elementRef.current) return 18
+    let height = elementRef.current.getBoundingClientRect().height || 18
+
     if (
-      ref.current.style.transform &&
-      ref.current.style.transform.includes('rotate(3deg)')
+      elementRef.current.style.transform &&
+      elementRef.current.style.transform.includes('rotate(3deg)')
     ) {
       const threeDeg = (3 * Math.PI) / 180
       height = (height - Math.sin(threeDeg) * 260) / Math.cos(threeDeg)
@@ -28,8 +38,13 @@ function useDraggable({ onDragStart, onDragEnd, onSettle, isExpanded }) {
   const handleMouseDown = (e) => {
     if (!isExpanded) {
       mouseDownPosRef.current = { x: e.clientX, y: e.clientY }
-      const { x: rectX, y: rectY } = ref.current.getBoundingClientRect()
-      setAbsPos({ x: rectX, y: rectY })
+
+      if (elementRef.current) {
+        const { x: rectX, y: rectY } =
+          elementRef.current.getBoundingClientRect()
+        setAbsPos({ x: rectX, y: rectY })
+      }
+
       window.addEventListener('mousemove', handleMouseMove)
       window.addEventListener('mouseup', handleMouseUp)
     }
@@ -48,9 +63,10 @@ function useDraggable({ onDragStart, onDragEnd, onSettle, isExpanded }) {
       const dx = Math.abs(e.clientX - mouseDownPosRef.current.x)
       const dy = Math.abs(e.clientY - mouseDownPosRef.current.y)
       const distance = Math.sqrt(dx * dx + dy * dy)
+
       if (distance > 1) {
         dragState.current = 'dragging'
-        onDragStart && onDragStart(id)
+        startDragging(id)
       }
     }
   }
@@ -58,11 +74,10 @@ function useDraggable({ onDragStart, onDragEnd, onSettle, isExpanded }) {
   const handleMouseUp = (e) => {
     if (dragState.current === 'dragging') {
       dragState.current = 'settling'
-
       x.set(0)
       y.set(0)
       rotate.set(0)
-      onDragEnd && onDragEnd(e)
+      onDragEnd && onDragEnd()
     }
 
     mouseDownPosRef.current = { x: null, y: null }
@@ -72,19 +87,18 @@ function useDraggable({ onDragStart, onDragEnd, onSettle, isExpanded }) {
   }
 
   const handleAnimationComplete = () => {
-    if (dragState.current == 'settling') {
+    if (dragState.current === 'settling') {
       dragState.current = 'rest'
-      onSettle && onSettle()
     }
   }
 
   return {
+    elementRef,
     dragState,
     getElementHeight,
     dragProps: {
-      ref,
-      onMouseDown: handleMouseDown,
       onLayoutAnimationComplete: handleAnimationComplete,
+      onMouseDown: handleMouseDown,
       style: {
         x,
         y,
@@ -95,6 +109,8 @@ function useDraggable({ onDragStart, onDragEnd, onSettle, isExpanded }) {
         zIndex: dragState.current === 'dragging' ? 1000 : 'auto',
       },
     },
+    isDragging: dragState.current === 'dragging',
+    isSettling: dragState.current === 'settling',
   }
 }
 

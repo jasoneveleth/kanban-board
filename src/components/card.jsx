@@ -1,7 +1,8 @@
+import React from 'react'
 import Textbox from './textbox.jsx'
 import { useTaskContext } from './StateManager.jsx'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import useDraggable from './useDraggable.jsx'
 import clsx from 'clsx'
 
@@ -21,24 +22,26 @@ function Card({ id }) {
   if (!task) {
     return null
   }
-  const { title, notes, deadline } = task
-  const isExpanded = isTaskEditing(id)
-  const isSelected = isTaskSelected(id)
 
-  const { dragState, getElementHeight, dragProps } = useDraggable({
-    onDragEnd: () => dropped(id),
-    isExpanded,
-  })
+  const { title, notes } = task
+  const [isExpanded, isSelected] = [isTaskEditing(id), isTaskSelected(id)]
 
-  let className = clsx(
+  const { elementRef, getElementHeight, dragProps, isDragging, isSettling } =
+    useDraggable({
+      id,
+      onDragEnd: () => dropped(id),
+      isExpanded,
+    })
+
+  const className = clsx(
     'rounded-lg shadow-sm w-260 bg-white card select-none overflow-hidden',
     'hover:shadow-lg transition-shadow duration-200 ease-in-out',
     {
       'px-13 py-8 border-3 border-pink-300': isExpanded,
       'px-13 py-8 border-3 border-blue-400': !isExpanded && isSelected,
       'px-15 py-10 border border-gray-300': !isExpanded && !isSelected,
-      'cursor-grabbing': dragState.current === 'dragging',
-      'cursor-pointer': dragState.current !== 'dragging',
+      'cursor-grabbing': isDragging,
+      'cursor-pointer': !isDragging,
     },
   )
 
@@ -47,15 +50,17 @@ function Card({ id }) {
     stiffness: 400,
     damping: 30,
   }
-  const instantTransition = { duration: 0 }
+
+  const instantTransition = {
+    duration: 0,
+  }
 
   const cardContent = (
     <motion.div
       layoutId={`card-${id}`}
-      transition={
-        dragState.current !== 'dragging' ? springTransition : instantTransition
-      }
+      transition={isDragging ? instantTransition : springTransition}
       className={className}
+      ref={elementRef}
       onClick={() => selectTask(id)}
       onDoubleClick={() => startEditing(id, 'title')}
       {...dragProps}>
@@ -95,9 +100,8 @@ function Card({ id }) {
     </motion.div>
   )
 
-  // this needs to be a function since we need to delay the call to getHeight()
-  const shadow = () => {
-    const opacity = dragState.current === 'settling' ? 'opacity-20' : ''
+  const shadowElement = () => {
+    const opacity = isSettling ? 'opacity-20' : ''
     return (
       <div
         className={`rounded-lg shadow-sm w-260 bg-gray-200 ${opacity}`}
@@ -106,14 +110,14 @@ function Card({ id }) {
     )
   }
 
-  const isDragging = dragState.current === 'dragging'
-  const hasShadow = isDragging || dragState.current === 'settling'
+  const hasShadow = isDragging || isSettling
 
   return (
     <div className="grid grid-cols-1 grid-rows-1">
       {hasShadow && (
-        <div className="col-start-1 row-start-1 z-0">{shadow()}</div>
+        <div className="col-start-1 row-start-1 z-0">{shadowElement()}</div>
       )}
+
       {isDragging ? (
         createPortal(cardContent, document.body)
       ) : (
@@ -122,4 +126,5 @@ function Card({ id }) {
     </div>
   )
 }
+
 export default Card
