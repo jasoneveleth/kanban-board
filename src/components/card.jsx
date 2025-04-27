@@ -1,8 +1,10 @@
-import React, { useRef, useState, useLayoutEffect } from 'react'
+import React from 'react'
 import Textbox from './textbox.jsx'
 import { useTaskContext } from './StateManager.jsx'
 import { createPortal } from 'react-dom'
-import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import useDraggable from './useDraggable.jsx'
+import clsx from 'clsx'
 
 function Card({ id }) {
   const {
@@ -13,7 +15,6 @@ function Card({ id }) {
     updateTask,
     isTaskSelected,
     taskData,
-    startDragging,
     dropped,
   } = useTaskContext()
 
@@ -21,103 +22,28 @@ function Card({ id }) {
   if (!task) {
     return null
   }
-  const { title, notes, deadline } = task
-  const isExpanded = isTaskEditing(id)
-  const isSelected = isTaskSelected(id)
 
-  const state = useRef('rest') // rest, dragging, settling
-  const mouseDownPosRef = useRef({ x: null, y: null })
-  const [absPos, setAbsPos] = useState({ x: null, y: null })
+  const { title, notes } = task
+  const [isExpanded, isSelected] = [isTaskEditing(id), isTaskSelected(id)]
 
-  const ref = useRef()
-  const placeholderRef = useRef(null)
+  const { elementRef, getElementHeight, dragProps, isDragging, isSettling } =
+    useDraggable({
+      id,
+      onDragEnd: () => dropped(id),
+      isExpanded,
+    })
 
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const rotate = useMotionValue(0)
-
-  const handleMouseDown = (e) => {
-    if (!isExpanded) {
-      mouseDownPosRef.current = { x: e.clientX, y: e.clientY }
-      const { x: rectX, y: rectY } = ref.current.getBoundingClientRect()
-      setAbsPos({ x: rectX, y: rectY })
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-    }
-  }
-
-  const handleMouseMove = (e) => {
-    if (state.current === 'dragging') {
-      const { x: startX, y: startY } = mouseDownPosRef.current
-      const dx = e.clientX - startX
-      const dy = e.clientY - startY
-
-      x.set(dx)
-      y.set(dy)
-      rotate.set(3) // 3 degree rotation during drag
-    } else {
-      const dx = Math.abs(e.clientX - mouseDownPosRef.current.x)
-      const dy = Math.abs(e.clientY - mouseDownPosRef.current.y)
-      const distance = Math.sqrt(dx * dx + dy * dy)
-      if (distance > 1) {
-        state.current = 'dragging'
-        startDragging(id)
-      }
-    }
-  }
-
-  const handleMouseUp = (e) => {
-    if (state.current === 'dragging') {
-      state.current = 'settling'
-
-      x.set(0)
-      y.set(0)
-      rotate.set(0)
-    }
-
-    mouseDownPosRef.current = { x: null, y: null }
-    setAbsPos({ x: null, y: null })
-    window.removeEventListener('mousemove', handleMouseMove)
-    window.removeEventListener('mouseup', handleMouseUp)
-  }
-
-  const handleAnimationComplete = () => {
-    if (state.current == 'settling') {
-      state.current = 'rest'
-      dropped(id)
-    }
-  }
-
-  let classNameList = [
-    'rounded-lg shadow-sm w-260 bg-white card select-none hover:shadow-lg transition-shadow duration-200 ease-in-out overflow-hidden',
-  ]
-  if (isExpanded) {
-    classNameList.push('px-13 py-8 border-3 border-pink-300')
-  } else if (isSelected) {
-    classNameList.push('px-13 py-8 border-3 border-blue-400')
-  } else {
-    classNameList.push('px-15 py-10 border border-gray-300')
-  }
-
-  if (state.current === 'dragging') {
-    classNameList.push('cursor-grabbing')
-  } else {
-    classNameList.push('cursor-pointer')
-  }
-  const className = classNameList.join(' ')
-
-  const getHeight = () => {
-    if (!ref.current) return 18
-    let height = ref.current.getBoundingClientRect().height || 18
-    if (
-      ref.current.style.transform &&
-      ref.current.style.transform.includes('rotate(3deg)')
-    ) {
-      const threeDeg = (3 * Math.PI) / 180
-      height = (height - Math.sin(threeDeg) * 260) / Math.cos(threeDeg)
-    }
-    return height
-  }
+  const className = clsx(
+    'rounded-lg shadow-sm w-260 bg-white card select-none overflow-hidden',
+    'hover:shadow-lg transition-shadow duration-200 ease-in-out',
+    {
+      'px-13 py-8 border-3 border-pink-300': isExpanded,
+      'px-13 py-8 border-3 border-blue-400': !isExpanded && isSelected,
+      'px-15 py-10 border border-gray-300': !isExpanded && !isSelected,
+      'cursor-grabbing': isDragging,
+      'cursor-pointer': !isDragging,
+    },
+  )
 
   const springTransition = {
     type: 'spring',
@@ -132,25 +58,12 @@ function Card({ id }) {
   const cardContent = (
     <motion.div
       layoutId={`card-${id}`}
-      transition={
-        state.current !== 'dragging' ? springTransition : instantTransition
-      }
-      onLayoutAnimationComplete={handleAnimationComplete}
-      ref={ref}
+      transition={isDragging ? instantTransition : springTransition}
       className={className}
+      ref={elementRef}
       onClick={() => selectTask(id)}
       onDoubleClick={() => startEditing(id, 'title')}
-      onMouseDown={handleMouseDown}
-      style={{
-        x,
-        y,
-        rotate,
-        position: state.current === 'dragging' ? 'fixed' : 'relative',
-        top: state.current === 'dragging' ? absPos.y : 'auto',
-        left: state.current === 'dragging' ? absPos.x : 'auto',
-        zIndex: state.current === 'dragging' ? 1000 : 'auto',
-      }}>
-      {/* Regular div for title to prevent layout animation */}
+      {...dragProps}>
       <div>
         <Textbox
           value={title}
@@ -187,25 +100,25 @@ function Card({ id }) {
     </motion.div>
   )
 
-  // this needs to be a function since we need to delay the call to getHeight()
-  const shadow = () => {
-    const opacity = state.current === 'settling' ? 'opacity-20' : ''
+  const shadowElement = () => {
+    const opacity = isSettling ? 'opacity-20' : ''
     return (
       <div
-        ref={placeholderRef}
         className={`rounded-lg shadow-sm w-260 bg-gray-200 ${opacity}`}
-        style={{ height: `${getHeight()}px` }}
+        style={{ height: `${getElementHeight()}px` }}
       />
     )
   }
 
-  const hasShadow = state.current === 'dragging' || state.current === 'settling'
+  const hasShadow = isDragging || isSettling
+
   return (
     <div className="grid grid-cols-1 grid-rows-1">
       {hasShadow && (
-        <div className="col-start-1 row-start-1 z-0">{shadow()}</div>
+        <div className="col-start-1 row-start-1 z-0">{shadowElement()}</div>
       )}
-      {state.current === 'dragging' ? (
+
+      {isDragging ? (
         createPortal(cardContent, document.body)
       ) : (
         <div className="col-start-1 row-start-1 z-10">{cardContent}</div>
@@ -213,4 +126,5 @@ function Card({ id }) {
     </div>
   )
 }
+
 export default Card
